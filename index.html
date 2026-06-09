@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaréFlow - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md bg-white p-8 rounded-lg shadow">
+        <h1 class="text-2xl font-bold text-center mb-6">Entrar - MaréFlow</h1>
+
+        <div id="error-message" class="hidden mb-4 text-red-600 text-sm"></div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">E-mail</label>
+                <input id="email" type="email" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" placeholder="seu@exemplo.com">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Senha</label>
+                <input id="password" type="password" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" placeholder="********">
+            </div>
+
+            <button id="btn-login" type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Entrar</button>
+        </form>
+    </div>
+
+    <script type="module" src="js/login.js"></script>
+</body>
+</html>

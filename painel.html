@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MareFlow - Painel da Oficina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-xl font-bold">MareFlow | Painel</h1>
+        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-semibold transition">Sair</button>
+    </nav>
+
+    <main class="max-w-6xl mx-auto mt-8 p-4 space-y-6">
+        <section class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Dados da Oficina</h2>
+
+                <div class="flex items-center gap-4 mb-4">
+                    <div id="logo-preview" class="w-20 h-20 rounded border bg-gray-50 flex items-center justify-center overflow-hidden text-xs text-gray-400 text-center px-2">
+                        Sem logo
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700">Logo</label>
+                        <input type="file" id="logo-file" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
+
+                <button id="btn-salvar-logo" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition">
+                    Salvar Logo
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Historico de OS</h2>
+                    <input id="busca-os" type="search" placeholder="Buscar por placa ou cliente" class="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-72">
+                </div>
+
+                <div id="lista-os" class="divide-y divide-gray-100">
+                    <p class="text-sm text-gray-500 py-4">Carregando ordens de servico...</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Gerar Novo Historico (OS)</h2>
+
+                <form id="os-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Placa do Veiculo *</label>
+                        <input type="text" id="placa" required placeholder="ABC-1234" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nome do Cliente *</label>
+                        <input type="text" id="cliente" required placeholder="Joao da Silva" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Quilometragem</label>
+                            <input type="text" id="km" placeholder="55.000 km" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Data da OS *</label>
+                            <input type="date" id="data-os" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Servicos Realizados *</label>
+                        <textarea id="servicos" required rows="3" placeholder="Troca de oleo, pastilhas de freio..." class="mt-1 block w-full border border-gray-300 rounded px-3 py-2"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Valor Total (R$)</label>
+                        <input type="number" step="0.01" id="valor" placeholder="450.00" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Anexar PDF da OS *</label>
+                        <input type="file" id="pdf-file" accept="application/pdf" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition">
+                        Salvar e Gerar QR Code
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center hidden" id="result-section">
+                <h2 class="text-xl font-bold text-green-600 mb-2">Sucesso! OS Gerada.</h2>
+                <p class="text-sm text-gray-500 mb-6 text-center">Este QR Code e fixo para a placa. Use o mesmo adesivo para todo o historico do veiculo.</p>
+
+                <div id="qrcode-container" class="bg-gray-50 p-4 border rounded mb-4"></div>
+
+                <p class="text-xs text-gray-400 mb-2">Link publico do veiculo:</p>
+                <a id="public-link" href="#" target="_blank" class="text-blue-500 text-sm break-all text-center hover:underline"></a>
+
+                <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                    <button id="btn-baixar-qr" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Baixar QR Code
+                    </button>
+                    <button id="btn-imprimir-qr" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
+                        Imprimir
+                    </button>
+                </div>
+
+                <button id="btn-nova-os" class="mt-6 text-blue-600 font-semibold hover:underline">Criar outra OS</button>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/painel.js"></script>
+</body>
+</html>
