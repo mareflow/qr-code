@@ -82,7 +82,7 @@ form.addEventListener('submit', async (e) => {
         const vencimentoStr = hoje.toISOString().split('T')[0];
 
         // Usar upsert para garantir a criação do perfil da oficina
-        await supabase
+        const { error: workshopError } = await supabase
             .from('workshops')
             .upsert({
                 id: user.id,
@@ -92,16 +92,21 @@ form.addEventListener('submit', async (e) => {
                 assinatura_vencimento: vencimentoStr
             }, { onConflict: 'id' });
 
+        if (workshopError) throw new Error('Erro ao criar perfil da oficina: ' + workshopError.message);
+
         // Inserir assinatura inicial baseada no plano escolhido
-        const { data: planoData } = await supabase.from('planos').select('id').eq('nome', plan).single();
+        const { data: planoData, error: planoError } = await supabase.from('planos').select('id').eq('nome', plan).single();
+        if (planoError) throw new Error('Erro ao buscar plano: ' + planoError.message);
+
         if (planoData) {
-            await supabase.from('assinaturas').upsert({
+            const { error: assinError } = await supabase.from('assinaturas').upsert({
                 workshop_id: user.id,
                 plano_id: planoData.id,
                 status: 'ativo',
                 data_inicio: vencimentoStr,
                 proximo_vencimento: vencimentoStr
             }, { onConflict: 'workshop_id' });
+            if (assinError) throw new Error('Erro ao criar assinatura: ' + assinError.message);
         }
 
         // Redirecionar imediatamente para a tela de pagamento
