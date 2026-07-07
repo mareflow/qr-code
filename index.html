@@ -1,32 +1,714 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0f1e">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MaréFlow - Login</title>
+    <title>Maré Flow - A Revolução no Relacionamento com o Cliente</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .bento-card {
+            transition: all 0.3s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        /* FAQ Accordion Styling */
+        details>summary {
+            list-style: none;
+        }
+
+        details>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] summary~* {
+            animation: sweep .3s ease-in-out;
+        }
+
+        @keyframes sweep {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px)
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="w-full max-w-md bg-white p-8 rounded-lg shadow">
-        <h1 class="text-2xl font-bold text-center mb-6">Entrar - MaréFlow</h1>
 
-        <div id="error-message" class="hidden mb-4 text-red-600 text-sm"></div>
+<body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white">
 
-        <form id="login-form" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">E-mail</label>
-                <input id="email" type="email" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" placeholder="seu@exemplo.com">
+    <!-- Navbar -->
+    <nav class="absolute w-full top-0 left-0 z-40 p-6 lg:px-12 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <img src="assets/logo.png" alt="Maré Flow" class="h-10 sm:h-12 z-50 drop-shadow-md">
+        </div>
+        <div class="flex gap-2 sm:gap-3">
+            <a href="login-cliente.html"
+                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-all text-xs sm:text-sm shadow-md">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="hidden sm:inline">Acesso Cliente</span>
+                <span class="sm:hidden">Cliente</span>
+            </a>
+            <a href="mapa.html"
+                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white/10 lg:bg-blue-50 hover:bg-white/20 lg:hover:bg-blue-100 text-white lg:text-blue-700 font-bold rounded-full transition-all text-xs sm:text-sm backdrop-blur-sm lg:backdrop-blur-none border border-white/20 lg:border-transparent">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <span class="hidden sm:inline">Buscar Oficinas Parceiras</span>
+                <span class="sm:hidden">Buscar Oficinas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 1. Hero Section -->
+    <section class="relative min-h-screen flex flex-col lg:flex-row border-b border-gray-200">
+        <!-- Esquerda: Valor -->
+        <div
+            class="w-full lg:w-1/2 relative bg-gray-900 text-white flex flex-col justify-center px-6 py-32 lg:p-20 overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1503375894314-47649d609fcd?q=80&w=2070&auto=format&fit=crop"
+                class="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay scale-105 transform origin-center"
+                alt="Mecânico">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-gray-900/95 to-black/95"></div>
+
+            <div class="relative z-10 max-w-xl mx-auto lg:mx-0 mt-8 lg:mt-0">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel text-sm font-bold mb-6 text-blue-100 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Sistema 100% Digital
+                </div>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
+                    Fidelize clientes entregando <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">transparência</span>
+                    e agilidade.
+                </h1>
+
+                <p class="text-lg text-gray-300 font-medium leading-relaxed mb-10">
+                    Você pode ter o melhor ERP do mundo, mas se o cliente não vê, o valor se perde. Encante e fidelize
+                    com um histórico digital completo na palma da mão do seu cliente, acessível via <strong>QR
+                        Code</strong>.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="cadastro.html"
+                        class="inline-flex justify-center items-center px-8 py-4 text-base font-bold text-blue-600 bg-white rounded-xl hover:bg-blue-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 group">
+                        Quero Ser Parceiro
+                        <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </a>
+                    <a href="#solucoes"
+                        class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-colors text-center shadow-lg flex items-center justify-center gap-2">
+                        Como funciona?
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direita: Formulário de Login (Intacto) -->
+        <div
+            class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-gray-50 relative z-20 shadow-[-20px_0_40px_-10px_rgba(0,0,0,0.1)]">
+            <div
+                class="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 relative -mt-20 lg:mt-0">
+                <div class="mb-8">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mb-5 shadow-lg shadow-blue-500/30">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight mb-1">Acesso Parceiro</h2>
+                    <p class="text-gray-500 font-medium text-sm">Entre com o e-mail e senha da sua oficina.</p>
+                </div>
+
+                <div id="error-message"
+                    class="hidden mb-6 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-semibold text-center">
+                </div>
+                <div id="success-message"
+                    class="hidden mb-6 bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-xl text-sm font-semibold text-center">
+                </div>
+
+                <!-- Formulário Parceiro -->
+                <form id="login-form" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">E-mail da Oficina</label>
+                        <input id="email" type="email" required
+                            class="block w-full border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-gray-900"
+                            placeholder="contato@suaoficina.com">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-bold text-gray-700">Senha</label>
+                            <button type="button" id="btn-forgot-password"
+                                class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">Esqueceu?</button>
+                        </div>
+                        <input id="password" type="password" required
+                            class="block w-full border border-gray-200 rounded-xl px-4 py-3.5 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-gray-900"
+                            placeholder="••••••••">
+                    </div>
+                    <button id="btn-login" type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5">
+                        Entrar no Sistema
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Faixa de Autoridade / Social Proof -->
+    <section class="bg-blue-600 py-10 overflow-hidden text-center text-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <p class="text-lg md:text-xl font-medium mb-6">O mercado automotivo mudou. A transparência no relacionamento
+                com o cliente é o maior diferencial de vendas.</p>
+            <div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-80 font-bold text-sm md:text-base">
+                <div class="flex items-center gap-2"><svg class="w-6 h-6" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg> Histórico inviolável</div>
+                <div class="flex items-center gap-2"><svg class="w-6 h-6" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg> Adequado a LGPD</div>
+                <div class="flex items-center gap-2"><svg class="w-6 h-6" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg> Consulta em 1 Segundo</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Experiência do Cliente (Split Screen) -->
+    <section id="solucoes" class="py-24 bg-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="lg:w-1/2">
+                    <div class="text-blue-500 font-bold text-sm uppercase tracking-wider mb-2">A Experiência Importa
+                    </div>
+                    <h2 class="text-4xl font-extrabold text-gray-900 mb-6 leading-tight">Deixe o seu sistema brilhar
+                        para o cliente</h2>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        Muitas oficinas possuem sistemas ERPs robustos internamente, mas a comunicação com o dono do
+                        carro continua falha. Ao invés de relatórios impressos que ficam perdidos no porta-luvas,
+                        entregue a credibilidade do seu serviço no formato digital.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="mt-1 bg-red-100 text-red-600 rounded-full p-1"><svg class="w-4 h-4" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg></div>
+                            <p class="text-gray-700 font-medium">Sem o QR Code, a experiência termina quando o carro sai
+                                da oficina.</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="mt-1 bg-red-100 text-red-600 rounded-full p-1"><svg class="w-4 h-4" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg></div>
+                            <p class="text-gray-700 font-medium">O cliente esquece do valor do seu serviço após alguns
+                                meses.</p>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="mt-1 bg-green-100 text-green-600 rounded-full p-1"><svg class="w-4 h-4"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg></div>
+                            <p class="text-gray-900 font-bold">Com Maré Flow: Sua marca fica conectada ao cliente 24/7
+                                de forma tecnológica.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:w-1/2 w-full relative">
+                    <!-- Representação visual do contraste -->
+                    <div
+                        class="absolute -inset-4 bg-gradient-to-r from-red-100 to-blue-100 rounded-[2.5rem] transform rotate-3 opacity-50">
+                    </div>
+                    <div class="relative bg-white border border-gray-200 rounded-3xl p-6 shadow-xl w-full">
+                        <!-- Cabeçalho Oficina e Veículo -->
+                        <div class="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-full border-2 border-gray-100 bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-extrabold text-gray-900">Mecânica Maré Flow</h4>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span
+                                            class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-md">HONDA
+                                            CIVIC</span>
+                                        <span class="text-xs text-gray-500 font-medium">ABC-1234</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span
+                                class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Finalizado
+                            </span>
+                        </div>
+
+                        <!-- Dados da OS -->
+                        <div class="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <h5 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-4">Última Revisão
+                                (OS #4089)</h5>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                                </path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-sm font-semibold text-gray-800">Troca de Correia
+                                            Dentada</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900">R$ 850,00</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-sm font-semibold text-gray-800">Revisão Freios
+                                            Traseiros</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-gray-900">R$ 320,00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="flex flex-col sm:flex-row items-center justify-end gap-3">
+                            <button
+                                class="w-full sm:w-auto px-4 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg shadow-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                Ver Fotos
+                            </button>
+                            <button
+                                class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-700 transition-colors">Ver
+                                Ordem de Serviço</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Dor 2: Desconfiança / Aprovação (Bento Grid) -->
+    <section class="py-24 bg-gray-50 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="text-blue-600 font-bold text-sm uppercase tracking-wider mb-2">Histórico Unificado</div>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">O Prontuário Completo do Veículo</h2>
+                <p class="text-lg text-gray-600 font-medium">
+                    Todas as oficinas parceiras conectadas em um só lugar. O cliente tem acesso a tudo o que já foi
+                    feito no carro, valorizando o veículo e o seu serviço.
+                </p>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Senha</label>
-                <input id="password" type="password" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2" placeholder="********">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div class="bento-card bg-white rounded-3xl p-8 border border-gray-200">
+                    <div
+                        class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Relatórios em PDF</h3>
+                    <p class="text-gray-600 font-medium">Faça o upload do check-list e relatórios técnicos. Tudo fica
+                        salvo para o cliente consultar a qualquer momento, construindo a credibilidade da sua oficina.
+                    </p>
+                </div>
+
+                <div class="bento-card bg-gray-900 text-white rounded-3xl p-8 border border-gray-800">
+                    <div class="w-12 h-12 bg-white/10 text-white rounded-xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Evidências Visuais (Fotos)</h3>
+                    <p class="text-gray-400 font-medium">Use a galeria de imagens para registrar como o serviço foi
+                        executado. Mostre a peça desgastada e a nova instalada, formando um histórico visual e
+                        transparente.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Dor 3: O Esquecimento (Dark Mode / QR Code) -->
+    <section class="py-24 bg-gray-900 text-white relative overflow-hidden border-t border-gray-800">
+        <!-- Fundo sutil -->
+        <div
+            class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] opacity-50">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">A oficina que o cliente esquece,<br>a
+                concorrência abraça.</h2>
+            <p class="text-xl text-gray-400 font-medium max-w-2xl mb-12">
+                O cliente guarda sua nota na gaveta e nunca mais lembra. E se você entregasse o histórico completo e o
+                seu Cartão de Visitas Digital acessível através de um simples QR Code?
+            </p>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-12 w-full max-w-4xl">
+                <!-- Adesivo Visual -->
+                <div
+                    class="w-64 h-64 bg-white p-4 rounded-2xl shadow-[0_0_50px_rgba(37,99,235,0.3)] transform rotate-3 relative hover:rotate-0 transition-transform duration-500">
+                    <div
+                        class="w-full h-full border-4 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MaréFlow" alt="QR Code"
+                            class="w-32 h-32 opacity-90">
+                        <p class="text-gray-900 font-bold text-sm mt-3 uppercase tracking-widest">Escaneie-me</p>
+                    </div>
+                    <div
+                        class="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full rotate-12">
+                        O Acesso Digital</div>
+                </div>
+
+                <div class="text-left space-y-6 max-w-sm">
+                    <div>
+                        <h4 class="text-xl font-bold text-white mb-2">Marca White-Label</h4>
+                        <p class="text-gray-400">O sistema herda o LOGO e as CORES exatas da sua oficina. Para o
+                            cliente, é o SEU aplicativo.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-white mb-2">Em qualquer lugar</h4>
+                        <p class="text-gray-400">Ao invés do adesivo comum de "Troca de óleo", o QR Code abre o
+                            histórico interativo com todos os serviços e o botão do seu WhatsApp na hora, onde o cliente
+                            escolher.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Como Funciona (Timeline Passo a Passo) -->
+    <section class="py-24 bg-white border-t border-gray-200">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">É fácil para você. Incrível para ele.
+                </h2>
+                <p class="text-lg text-gray-600 font-medium">Veja como o fluxo da sua oficina muda em 3 passos simples.
+                </p>
             </div>
 
-            <button id="btn-login" type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Entrar</button>
-        </form>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 mx-auto bg-blue-50 text-blue-600 font-black text-3xl rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-blue-100">
+                        1</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Cadastre a OS</h3>
+                    <p class="text-gray-600 font-medium">Insira a placa, valor e o PDF do serviço em nosso painel
+                        administrativo super rápido.</p>
+                </div>
+                <div class="text-center relative">
+                    <!-- Setas no desktop -->
+                    <div class="hidden md:block absolute top-10 -left-6 w-12 border-t-2 border-dashed border-gray-300">
+                    </div>
+                    <div
+                        class="w-20 h-20 mx-auto bg-blue-50 text-blue-600 font-black text-3xl rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-blue-100">
+                        2</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Imprima o QR Code</h3>
+                    <p class="text-gray-600 font-medium">O sistema gera um QR code específico para a placa em 1 clique.
+                        Cole no carro, no manual ou onde for mais prático.</p>
+                </div>
+                <div class="text-center relative">
+                    <div class="hidden md:block absolute top-10 -left-6 w-12 border-t-2 border-dashed border-gray-300">
+                    </div>
+                    <div
+                        class="w-20 h-20 mx-auto bg-green-50 text-green-600 font-black text-3xl rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-green-100">
+                        3</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Cliente Acessa</h3>
+                    <p class="text-gray-600 font-medium">Ele aponta a câmera, entra no seu portal com as suas cores e
+                        visualiza o prontuário. Fidelização automática!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final (Cadastro) -->
+    <section class="bg-blue-600 py-16 md:py-24 px-6 text-center text-white border-t border-blue-500">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight">Pronto para revolucionar seu
+                atendimento?</h2>
+            <p class="text-lg md:text-xl text-blue-100 mb-10 max-w-2xl mx-auto font-medium">Escolha seu plano,
+                cadastre-se em 1 minuto e libere o acesso na mesma hora com pagamento via PIX.</p>
+            <a href="cadastro.html"
+                class="inline-flex justify-center items-center px-10 py-5 text-lg font-bold text-blue-600 bg-white rounded-xl hover:bg-gray-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 group">
+                Ver Planos e Começar Agora
+                <svg class="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6">
+                    </path>
+                </svg>
+            </a>
+        </div>
+    </section>
+
+    <!-- 7. FAQ / Perguntas Frequentes -->
+    <section class="py-24 bg-gray-50 border-t border-gray-200">
+        <div class="max-w-3xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Dúvidas Frequentes</h2>
+            </div>
+
+            <div class="space-y-4">
+                <details class="group bg-white rounded-2xl border border-gray-200 cursor-pointer">
+                    <summary class="flex items-center justify-between p-6 font-bold text-lg text-gray-900">
+                        O cliente precisa baixar algum aplicativo?
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24"
+                                width="24">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="text-gray-600 px-6 pb-6 font-medium leading-relaxed">
+                        Não! Tudo funciona diretamente no navegador do celular dele (Safari, Chrome). Basta apontar a
+                        câmera nativa do celular para o QR Code no vidro.
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-2xl border border-gray-200 cursor-pointer">
+                    <summary class="flex items-center justify-between p-6 font-bold text-lg text-gray-900">
+                        Eu consigo colocar as cores da minha oficina?
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24"
+                                width="24">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="text-gray-600 px-6 pb-6 font-medium leading-relaxed">
+                        Sim. Nosso sistema é "White Label". Dentro do painel de administração, você insere a URL do seu
+                        logotipo e seleciona as cores exatas da sua marca. A área do cliente fica totalmente
+                        personalizada com a sua identidade.
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-2xl border border-gray-200 cursor-pointer">
+                    <summary class="flex items-center justify-between p-6 font-bold text-lg text-gray-900">
+                        É seguro? Alguém pode ver a OS de outro carro?
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24"
+                                width="24">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="text-gray-600 px-6 pb-6 font-medium leading-relaxed">
+                        Altamente seguro. Quando o cliente escaneia o QR Code pela primeira vez, ele é obrigado a
+                        realizar um pequeno cadastro com E-mail e Senha, validando os dados. Ninguém além do dono
+                        cadastrado acessa o prontuário, garantindo conformidade com a LGPD.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- 8. Footer CTA -->
+    <footer class="bg-gray-900 text-white py-20 border-t border-gray-800">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-6">Pronto para subir o nível da sua
+                oficina?</h2>
+            <p class="text-gray-400 font-medium mb-10 text-lg">Pare de competir por preço. Entregue valor, tecnologia e
+                transparência.</p>
+            <a href="https://wa.me/5548992233575?text=Olá, quero modernizar minha oficina com o Maré Flow!"
+                target="_blank"
+                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-1">
+                Falar com Consultor no WhatsApp
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">
+                    </path>
+                </svg>
+            </a>
+
+            <div
+                class="mt-20 pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 text-gray-500 text-sm font-medium">
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <span>© 2026 Maré Flow. Todos os direitos reservados.</span>
+                    <span class="hidden md:inline">•</span>
+                    <span>ia.mareflow@gmail.com.br</span>
+                </div>
+                <div class="flex gap-6 items-center">
+                    <a href="https://www.instagram.com/mare.flow/" target="_blank"
+                        class="hover:text-white transition-colors" aria-label="Instagram">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                        </svg>
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61576111221964" target="_blank"
+                        class="hover:text-white transition-colors" aria-label="Facebook">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                        </svg>
+                    </a>
+                    <a href="termos.html" class="hover:text-gray-300">Termos</a>
+                    <a href="privacidade.html" class="hover:text-gray-300">Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal Recuperar Senha (Imutável) -->
+    <div id="forgot-password-modal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity">
+        <div
+            class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative transform transition-all border border-gray-100">
+            <button id="btn-close-modal" type="button"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+            <div class="mb-6 text-center mt-2">
+                <div
+                    class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                    <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-extrabold text-gray-900 mb-2">Recuperar Senha</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">Digite seu e-mail cadastrado e enviaremos um link
+                    seguro para você redefinir sua senha.</p>
+            </div>
+
+            <div id="recovery-message" class="hidden mb-4 p-3 rounded-lg text-sm text-center font-medium"></div>
+
+            <form id="recovery-form" class="space-y-4">
+                <div>
+                    <input id="recovery-email" type="email" required
+                        class="block w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                        placeholder="Ex: contato@oficina.com">
+                </div>
+                <button type="submit" id="btn-send-recovery"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all duration-300">
+                    Enviar Link de Recuperação
+                </button>
+            </form>
+        </div>
     </div>
 
+    <!-- Cookie Banner -->
+    <div id="cookie-banner"
+        class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 md:p-6 shadow-2xl z-50 transform translate-y-full transition-transform duration-500 ease-in-out border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-gray-300 font-medium text-center md:text-left">
+            Utilizamos cookies essenciais para garantir que você obtenha a melhor experiência em nosso sistema, de
+            acordo com nossa <a href="privacidade.html" class="text-blue-400 hover:text-blue-300 underline">Política de
+                Privacidade</a>.
+        </p>
+        <button id="btn-accept-cookies"
+            class="w-full md:w-auto whitespace-nowrap bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg font-bold transition-colors">
+            Entendi e Aceito
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const banner = document.getElementById('cookie-banner');
+            const btnAccept = document.getElementById('btn-accept-cookies');
+
+            if (!localStorage.getItem('mareflow_cookies_accepted')) {
+                setTimeout(() => {
+                    banner.classList.remove('translate-y-full');
+                }, 1000);
+            }
+
+            btnAccept.addEventListener('click', () => {
+                localStorage.setItem('mareflow_cookies_accepted', 'true');
+                banner.classList.add('translate-y-full');
+            });
+        });
+    </script>
+
     <script type="module" src="js/login.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registrado com sucesso.', reg))
+                    .catch(err => console.error('Erro ao registrar o Service Worker:', err));
+            });
+        }
+    </script>
 </body>
+
 </html>

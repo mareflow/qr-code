@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f9fafb">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso - Maré Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+    <nav class="w-full bg-gray-900 p-6 flex justify-between items-center shadow-md">
+        <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <img src="assets/logo.png" alt="Maré Flow" class="h-10">
+        </a>
+        <div class="flex items-center gap-3">
+            <a href="login-cliente.html" class="text-white text-sm font-bold bg-green-600 px-4 py-2 rounded-lg hover:bg-green-500 transition">Acesso Cliente</a>
+            <a href="index.html" class="text-white text-sm font-bold bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-500 transition">Voltar</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 py-16">
+        <h1 class="text-3xl font-extrabold mb-8 text-gray-900">Termos de Uso</h1>
+        <div class="prose prose-blue max-w-none text-gray-700 space-y-6">
+            <p>Última atualização: 16 de Junho de 2026</p>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">1. Aceitação dos Termos</h2>
+                <p>Ao acessar e utilizar o sistema <strong>Maré Flow</strong>, você concorda expressamente com estes Termos de Uso. Se você não concordar com algum dos termos descritos, não deverá utilizar nossa plataforma. O Maré Flow atua como um fornecedor de tecnologia para a gestão de histórico de veículos entre oficinas parceiras e seus respectivos clientes finais.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">2. Descrição do Serviço</h2>
+                <p>A plataforma Maré Flow fornece ferramentas de criação de Ordens de Serviço (OS), geração de QR Codes de acesso, armazenamento de evidências visuais (fotos e PDFs) e exibição do histórico de manutenção do veículo para o cliente final, sob a marca da oficina cadastrada (tecnologia White Label).</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">3. Responsabilidades do Parceiro (Oficina)</h2>
+                <p>O Parceiro que adquire e utiliza a plataforma compromete-se a: (a) Inserir dados reais e precisos sobre as Ordens de Serviço; (b) Não utilizar a plataforma para armazenar conteúdo ilegal ou impróprio nas galerias de fotos e PDFs; (c) Obter o consentimento do cliente final para a coleta de seu e-mail e dados do veículo, em conformidade com a LGPD; (d) Manter sigilo sobre suas credenciais de acesso.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">4. Responsabilidades do Cliente Final</h2>
+                <p>O Cliente Final que acessa o histórico através do QR Code compromete-se a não tentar fraudar, burlar as medidas de segurança, ou subverter o uso do "Magic Link". A veracidade dos dados lançados na plataforma é de inteira responsabilidade da Oficina Parceira emissora da Ordem de Serviço.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">5. Propriedade Intelectual</h2>
+                <p>O software, os designs, a marca Maré Flow e a infraestrutura tecnológica são de propriedade exclusiva do Maré Flow. É vedada a cópia, engenharia reversa ou reprodução não autorizada do sistema. Os logotipos, nomes e cores inseridos pelas oficinas através da função "White Label" são de propriedade de cada oficina.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">6. Limitação de Responsabilidade</h2>
+                <p>O Maré Flow não se responsabiliza por disputas comerciais, discordâncias de valores em orçamentos, ou pela qualidade do serviço mecânico prestado pela oficina parceira. O sistema atua apenas como facilitador tecnológico de comunicação e registro.</p>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">7. Modificações dos Termos</h2>
+                <p>O Maré Flow reserva-se o direito de alterar estes Termos a qualquer momento. Quaisquer alterações serão comunicadas através da plataforma. O uso contínuo após as alterações constituirá a aceitação dos novos Termos.</p>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 py-8 border-t border-gray-800 text-center text-sm text-gray-500">
+        <p>© 2026 Maré Flow. Todos os direitos reservados.</p>
+    </footer>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+

@@ -2,119 +2,877 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f9fafb">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MareFlow - Painel da Oficina</title>
+    <title>Oficina Maré Flow - Painel da Oficina</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+
+        /* ── TABS ── */
+        .tab-nav-btn {
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .tab-nav-btn:hover { color: #374151; background: #f9fafb; }
+        .tab-nav-btn.active-tab {
+            color: var(--tab-accent, #2563EB);
+            border-bottom-color: var(--tab-accent, #2563EB);
+        }
+
+        /* ── PANEL ANIMATION ── */
+        .tab-panel { animation: fadeIn 0.18s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── SECTION LABEL ── */
+        .section-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .08em; color: #6b7280;
+            padding-bottom: 8px; border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 16px;
+        }
+
+        /* ── QR MODAL ── */
+        #qr-history-modal { backdrop-filter: blur(4px); }
+        #qr-history-modal > div {
+            animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { opacity:0; transform:scale(.92); }
+            to   { opacity:1; transform:scale(1); }
+        }
+
+        /* ── NOVA-OS GRID TRANSITION ── */
+        #nova-os-grid { transition: grid-template-columns 0.3s; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold">MareFlow | Painel</h1>
-        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-semibold transition">Sair</button>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    <!-- ══════════════ NAVBAR ══════════════ -->
+    <nav id="navbar" class="bg-blue-900 text-white px-4 py-3 shadow-md flex justify-between items-center transition-colors duration-300">
+        <h1 id="navbar-title" class="text-lg font-bold truncate mr-4">Carregando... | Painel</h1>
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Sininho de Lembretes -->
+            <button id="btn-bell-reminders" onclick="toggleRemindersModal()" class="relative bg-white/10 hover:bg-white/20 border border-white/20 p-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-white/50" title="Lembretes do Dia">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <span id="bell-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-blue-900 shadow-sm animate-pulse">0</span>
+            </button>
+
+            <a href="assinatura.html" id="btn-assinatura"
+               class="hidden sm:flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                <span>💳</span><span class="hidden md:inline">Minha Assinatura</span>
+            </a>
+            <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded text-sm font-semibold transition">Sair</button>
+        </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto mt-8 p-4 space-y-6">
-        <section class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Dados da Oficina</h2>
+    <!-- Banner assinatura -->
+    <div id="assinatura-banner" style="display:none;"></div>
 
-                <div class="flex items-center gap-4 mb-4">
-                    <div id="logo-preview" class="w-20 h-20 rounded border bg-gray-50 flex items-center justify-center overflow-hidden text-xs text-gray-400 text-center px-2">
-                        Sem logo
+    <!-- ══════════════ TAB NAV ══════════════ -->
+    <div class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6">
+            <nav class="flex" role="tablist">
+                <button id="tabn-config" role="tab" aria-selected="true"
+                        onclick="switchTab('config')"
+                        class="tab-nav-btn active-tab flex-1 md:flex-none flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-4 md:px-12 py-3 md:py-4 text-xs md:text-sm font-semibold">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>Configuração</span>
+                </button>
+                <button id="tabn-historico" role="tab" aria-selected="false"
+                        onclick="switchTab('historico')"
+                        class="tab-nav-btn flex-1 md:flex-none flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-4 md:px-12 py-3 md:py-4 text-xs md:text-sm font-semibold">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                    <span>Histórico de OS</span>
+                </button>
+                <button id="tabn-nova-os" role="tab" aria-selected="false"
+                        onclick="switchTab('nova-os')"
+                        class="tab-nav-btn flex-1 md:flex-none flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-4 md:px-12 py-3 md:py-4 text-xs md:text-sm font-semibold">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Nova OS</span>
+                </button>
+                <button id="tabn-oportunidades" role="tab" aria-selected="false"
+                        onclick="switchTab('oportunidades'); loadOportunidades();"
+                        class="tab-nav-btn flex-1 md:flex-none flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-4 md:px-12 py-3 md:py-4 text-xs md:text-sm font-semibold">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span>Oportunidades</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- ══════════════ MAIN ══════════════ -->
+    <main class="max-w-7xl mx-auto mt-6 px-4 sm:px-6 pb-16 space-y-6">
+
+        <!-- ─────────────────────────────────────────── -->
+        <!-- TAB 1 — CONFIGURAÇÃO (2 colunas)           -->
+        <!-- ─────────────────────────────────────────── -->
+        <div id="tab-config" class="tab-panel">
+            <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100">
+
+                <h2 class="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Configuração da Oficina
+                </h2>
+
+                <form id="config-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+                        <!-- ── COLUNA ESQUERDA: Identidade ── -->
+                        <div class="space-y-5">
+                            <p class="section-label">Identidade da Oficina</p>
+
+                            <!-- Logo preview -->
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden mb-3 bg-gray-50 hover:bg-gray-100 transition">
+                                    <img id="logo-preview" src="assets/logo.png" alt="Logo" class="w-full h-full object-contain hidden">
+                                    <span id="logo-placeholder" class="text-gray-400 text-sm text-center px-2">Sem Logo</span>
+                                </div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1 w-full">Upload de Logo</label>
+                                <input type="file" id="config-logo" accept="image/*"
+                                       class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Oficina</label>
+                                <input type="text" id="config-nome" placeholder="Ex: Oficina Maré Flow" required
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp (somente números)</label>
+                                <input type="text" id="config-whatsapp" placeholder="Ex: 5548992233575"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Instagram (nome de usuário)</label>
+                                <input type="text" id="config-instagram" placeholder="Ex: mare.flow"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Link de Avaliação do Google</label>
+                                <input type="text" id="config-google-review" placeholder="Ex: https://g.page/r/..."
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CPF ou CNPJ <span class="text-red-500">*</span></label>
+                                <input type="text" id="config-cpf-cnpj" placeholder="Ex: 12.345.678/0001-99"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+                                <p class="text-[10px] text-gray-400 mt-1">Usado para cobranças automáticas via Asaas. Somente números.</p>
+                            </div>
+                        </div>
+
+                        <!-- ── COLUNA DIREITA: Localização + Cores ── -->
+                        <div class="space-y-5">
+                            <p class="section-label">Localização no Mapa</p>
+                            <p class="text-xs text-gray-500 -mt-3 mb-1">Preencha para aparecer no Mapa de Parceiros.</p>
+
+                            <div class="grid grid-cols-4 gap-3">
+                                <div class="col-span-3">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Rua / Avenida</label>
+                                    <input type="text" id="config-rua" placeholder="Av. Paulista"
+                                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-colors">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Número</label>
+                                    <input type="text" id="config-numero" placeholder="1000"
+                                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-colors">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Bairro</label>
+                                    <input type="text" id="config-bairro" placeholder="Bela Vista"
+                                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-colors">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Cidade</label>
+                                    <input type="text" id="config-cidade" placeholder="São Paulo"
+                                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-colors">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">UF</label>
+                                    <select id="config-uf" class="block w-full border border-gray-300 rounded-lg px-2 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-colors">
+                                        <option value="">UF</option>
+                                        <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option>
+                                        <option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option>
+                                        <option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+                                        <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option>
+                                        <option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option>
+                                        <option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+                                        <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Aparência do QR Code -->
+                            <div class="pt-4 border-t border-gray-100 mt-6">
+                                <p class="section-label">Aparência do QR Code (Impressão térmica)</p>
+                                <p class="text-xs text-gray-500 -mt-3 mb-3">O que deve aparecer no centro do QR Code?</p>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="config-qr-type" value="text" class="text-blue-600 focus:ring-blue-500" checked>
+                                        <span class="text-sm font-medium text-gray-700">Texto Personalizado</span>
+                                    </label>
+                                    <div id="qr-text-container" class="pl-6">
+                                        <input type="text" id="config-qr-text" placeholder="Ex: Cuidado por Maré Flow" maxlength="30"
+                                               class="block w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-colors">
+                                        <p class="text-[10px] text-gray-400 mt-1">Recomendado máximo de 20 caracteres.</p>
+                                    </div>
+                                    
+                                    <label class="flex items-center gap-2 cursor-pointer mt-3">
+                                        <input type="radio" name="config-qr-type" value="logo" class="text-blue-600 focus:ring-blue-500">
+                                        <span class="text-sm font-medium text-gray-700">Ícone de Impressão (Preto e Branco)</span>
+                                    </label>
+                                    <div id="qr-logo-container" class="pl-6 hidden">
+                                        <div class="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden mb-2 bg-gray-50">
+                                            <img id="qr-logo-preview" src="" alt="QR Logo" class="w-full h-full object-contain hidden">
+                                            <span id="qr-logo-placeholder" class="text-gray-400 text-xs text-center px-1">Sem Ícone</span>
+                                        </div>
+                                        <input type="file" id="config-qr-logo" accept="image/*"
+                                               class="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
+                                        <p class="text-[10px] text-gray-400 mt-1">Envie um ícone simples, sem fundo, cor preta.</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 p-4 border border-gray-100 rounded-lg bg-gray-50 flex flex-col items-center justify-center">
+                                    <span class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Pré-visualização</span>
+                                    <canvas id="qr-center-preview" width="180" height="180" class="border border-gray-300 shadow-sm bg-white"></canvas>
+                                    <p class="text-[10px] text-gray-400 mt-2 text-center max-w-[200px]">Exemplo de como o QR Code será impresso.</p>
+                                </div>
+                            </div>
+
+                            <!-- Divisor Cores -->
+                            <div class="pt-4 border-t border-gray-100 mt-6">
+                                <p class="section-label">Cores do Tema</p>
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Header</label>
+                                        <input type="color" id="config-cor-principal" value="#1E3A8A"
+                                               class="block w-full h-12 border border-gray-200 rounded-lg cursor-pointer p-1 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Botões</label>
+                                        <input type="color" id="config-cor-botoes" value="#2563EB"
+                                               class="block w-full h-12 border border-gray-200 rounded-lg cursor-pointer p-1 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Fundo Painel</label>
+                                        <input type="color" id="config-cor-fundo-painel" value="#F9FAFB"
+                                               class="block w-full h-12 border border-gray-200 rounded-lg cursor-pointer p-1 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Texto Painel</label>
+                                        <input type="color" id="config-cor-texto-painel" value="#1F2937"
+                                               class="block w-full h-12 border border-gray-200 rounded-lg cursor-pointer p-1 bg-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Fundo App Cliente</label>
+                                        <input type="color" id="config-cor-fundo" value="#F3F4F6"
+                                               class="block w-full h-12 border border-gray-200 rounded-lg cursor-pointer p-1 bg-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /grid -->
+
+                    <!-- Botão salvar (largura total) -->
+                    <div class="mt-8 pt-6 border-t border-gray-100">
+                        <button type="submit" id="btn-salvar-config"
+                                class="w-full md:w-auto md:min-w-[220px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                            Salvar Configurações
+                        </button>
                     </div>
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700">Logo</label>
-                        <input type="file" id="logo-file" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </form>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────── -->
+        <!-- TAB 2 — HISTÓRICO DE OS                   -->
+        <!-- ─────────────────────────────────────────── -->
+        <div id="tab-historico" class="tab-panel hidden">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100">
+
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        Histórico de OS
+                    </h2>
+                </div>
+
+                <!-- DASHBOARD / RELATÓRIO -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex flex-col justify-center">
+                        <span class="text-xs font-semibold text-blue-800 uppercase mb-1">OS no Mês</span>
+                        <strong id="dash-os-mes" class="text-2xl font-bold text-blue-900">0</strong>
+                    </div>
+                    <div class="bg-green-50 border border-green-100 p-4 rounded-xl flex flex-col justify-center">
+                        <span class="text-xs font-semibold text-green-800 uppercase mb-1">Faturamento Mês</span>
+                        <strong id="dash-receita-mes" class="text-2xl font-bold text-green-900">R$ 0,00</strong>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-100 p-4 rounded-xl flex flex-col justify-center">
+                        <span class="text-xs font-semibold text-purple-800 uppercase mb-1">Ticket Médio</span>
+                        <strong id="dash-ticket-medio" class="text-2xl font-bold text-purple-900">R$ 0,00</strong>
+                    </div>
+                    <div class="bg-orange-50 border border-orange-100 p-4 rounded-xl flex flex-col justify-center">
+                        <span class="text-xs font-semibold text-orange-800 uppercase mb-1">Top Serviço</span>
+                        <strong id="dash-top-servico" class="text-sm font-bold text-orange-900 truncate" title="-">-</strong>
                     </div>
                 </div>
 
-                <button id="btn-salvar-logo" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition">
-                    Salvar Logo
-                </button>
-            </div>
+                <div class="flex flex-col md:flex-row md:items-end gap-4 mb-5 flex-wrap">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs text-gray-500 mb-1">Período (Início)</label>
+                        <input id="filtro-data-inicio" type="date" class="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="block text-xs text-gray-500 mb-1">Período (Fim)</label>
+                        <input id="filtro-data-fim" type="date" class="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    </div>
+                    <div class="flex-1 min-w-[180px]">
+                        <label class="block text-xs text-gray-500 mb-1">Compartimento</label>
+                        <select id="filtro-categoria" class="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Todos</option>
+                            <option value="MOTOR">MOTOR</option>
+                            <option value="TROCA DE ÓLEO MOTOR">ÓLEO MOTOR</option>
+                            <option value="SUSPENSÃO">SUSPENSÃO</option>
+                            <option value="FREIOS">FREIOS</option>
+                            <option value="CÂMBIO">CÂMBIO</option>
+                            <option value="CÂMBIO AUTOMÁTICO">CÂMBIO AUT.</option>
+                            <option value="TROCA DE ÓLEO CAMBIO AUTOMÁTICO">ÓLEO CÂMBIO AUT.</option>
+                            <option value="TROCA DE ÓLEO CAMBIO">ÓLEO CÂMBIO</option>
+                            <option value="PNEUS">PNEUS</option>
+                            <option value="INJEÇÃO">INJEÇÃO</option>
+                            <option value="EMBREAGEM">EMBREAGEM</option>
+                            <option value="ESCAPAMENTO">ESCAPAMENTO</option>
+                            <option value="OUTRO">OUTRO</option>
+                        </select>
+                    </div>
+                    <div class="relative flex-[2] min-w-[250px]">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="top:27px;">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <label class="block text-xs text-gray-500 mb-1">Busca</label>
+                        <input id="busca-os" type="search" placeholder="Buscar placa/cliente"
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    </div>
+                </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">Historico de OS</h2>
-                    <input id="busca-os" type="search" placeholder="Buscar por placa ou cliente" class="border border-gray-300 rounded px-3 py-2 text-sm w-full md:w-72">
+                <div class="mb-4 bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-start gap-3">
+                    <svg class="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p class="text-xs text-orange-800"><strong>Atenção:</strong> Ordens de Serviço excluídas não retornam a cota do seu limite mensal. Elas permanecem contabilizadas no mês de criação original.</p>
                 </div>
 
                 <div id="lista-os" class="divide-y divide-gray-100">
-                    <p class="text-sm text-gray-500 py-4">Carregando ordens de servico...</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Gerar Novo Historico (OS)</h2>
-
-                <form id="os-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Placa do Veiculo *</label>
-                        <input type="text" id="placa" required placeholder="ABC-1234" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Nome do Cliente *</label>
-                        <input type="text" id="cliente" required placeholder="Joao da Silva" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Quilometragem</label>
-                            <input type="text" id="km" placeholder="55.000 km" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data da OS *</label>
-                            <input type="date" id="data-os" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Servicos Realizados *</label>
-                        <textarea id="servicos" required rows="3" placeholder="Troca de oleo, pastilhas de freio..." class="mt-1 block w-full border border-gray-300 rounded px-3 py-2"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Valor Total (R$)</label>
-                        <input type="number" step="0.01" id="valor" placeholder="450.00" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Anexar PDF da OS *</label>
-                        <input type="file" id="pdf-file" accept="application/pdf" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    </div>
-
-                    <button type="submit" id="btn-submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded transition">
-                        Salvar e Gerar QR Code
-                    </button>
-                </form>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center hidden" id="result-section">
-                <h2 class="text-xl font-bold text-green-600 mb-2">Sucesso! OS Gerada.</h2>
-                <p class="text-sm text-gray-500 mb-6 text-center">Este QR Code e fixo para a placa. Use o mesmo adesivo para todo o historico do veiculo.</p>
-
-                <div id="qrcode-container" class="bg-gray-50 p-4 border rounded mb-4"></div>
-
-                <p class="text-xs text-gray-400 mb-2">Link publico do veiculo:</p>
-                <a id="public-link" href="#" target="_blank" class="text-blue-500 text-sm break-all text-center hover:underline"></a>
-
-                <div class="mt-6 flex flex-col sm:flex-row gap-3">
-                    <button id="btn-baixar-qr" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Baixar QR Code
-                    </button>
-                    <button id="btn-imprimir-qr" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded">
-                        Imprimir
-                    </button>
+                    <p class="text-sm text-gray-500 py-4">Carregando ordens de serviço...</p>
                 </div>
 
-                <button id="btn-nova-os" class="mt-6 text-blue-600 font-semibold hover:underline">Criar outra OS</button>
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+                    <button id="btn-prev-page" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm disabled:opacity-50 transition-colors">← Anterior</button>
+                    <span id="page-info" class="text-sm text-gray-500 font-medium bg-gray-50 px-3 py-1 rounded-full border">Página 1</span>
+                    <button id="btn-next-page" class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm disabled:opacity-50 transition-colors">Próxima →</button>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <!-- ─────────────────────────────────────────── -->
+        <!-- TAB 3 — NOVA OS + QR CODE                 -->
+        <!-- ─────────────────────────────────────────── -->
+        <div id="tab-nova-os" class="tab-panel hidden">
+            <div id="nova-os-grid" class="grid grid-cols-1 gap-8">
+
+                <!-- Formulário de OS -->
+                <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Nova Ordem de Serviço
+                    </h2>
+
+                    <form id="os-form" class="space-y-5">
+                        <!-- Tipo veículo -->
+                        <div class="flex items-center gap-3 p-1 bg-gray-100 rounded-xl w-fit">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tipo_veiculo" value="Carro" class="peer sr-only" checked>
+                                <div class="px-5 py-2 rounded-lg text-sm font-bold peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm text-gray-500 hover:text-gray-700 transition-all">🚗 Carro</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tipo_veiculo" value="Moto" class="peer sr-only">
+                                <div class="px-5 py-2 rounded-lg text-sm font-bold peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm text-gray-500 hover:text-gray-700 transition-all">🏍️ Moto</div>
+                            </label>
+                        </div>
+
+                        <!-- Dados do veículo em 4 cols -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Placa *</label>
+                                <input type="text" id="placa" required placeholder="ABC-1234"
+                                       class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                                <input type="text" id="marca" placeholder="Chevrolet"
+                                       class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+                                <input type="text" id="veiculo" placeholder="Celta"
+                                       class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Motorização</label>
+                                <input type="text" id="motorizacao" placeholder="1.0 8v"
+                                       class="block w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                        </div>
+
+                        <!-- Cliente + Email + Telefone -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Cliente *</label>
+                                <input type="text" id="cliente" required placeholder="João da Silva"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">E-mail do Cliente *</label>
+                                <input type="email" id="email-cliente" required placeholder="cliente@email.com"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Telefone (Opcional)</label>
+                                <input type="tel" id="telefone-cliente" placeholder="(11) 99999-9999"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 mt-1">O e-mail é necessário para o cliente acessar o histórico online. Vincula-se ao e-mail ou placa.</p>
+                            <p id="email-placa-info" class="hidden text-[10px] text-amber-700 mt-1 font-semibold"></p>
+                            <button type="button" id="btn-alterar-email" class="hidden mt-2 text-xs font-bold text-blue-600 hover:text-blue-800 underline">Alterar e-mail cadastrado</button>
+                        </div>
+
+                        <!-- KM + Data -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Quilometragem</label>
+                                <input type="text" id="km" placeholder="55.000 km"
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Data da OS *</label>
+                                <input type="date" id="data-os" required
+                                       class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                        </div>
+
+                        <!-- Serviços -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Serviços Realizados</label>
+                            <textarea id="servicos" rows="3" placeholder="Troca de óleo, pastilhas de freio..."
+                                      class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors resize-none"></textarea>
+                        </div>
+
+                        <!-- Tags de Compartimentos -->
+                        <div class="mt-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Categorias / Compartimentos</label>
+                            <div class="flex flex-wrap gap-2" id="tags-container">
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="MOTOR" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">MOTOR</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="TROCA DE ÓLEO MOTOR" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">ÓLEO MOTOR</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="SUSPENSÃO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">SUSPENSÃO</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="FREIOS" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">FREIOS</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="CÂMBIO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">CÂMBIO</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="CÂMBIO AUTOMÁTICO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">CÂMBIO AUT.</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="TROCA DE ÓLEO CAMBIO AUTOMÁTICO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">ÓLEO CÂMBIO AUT.</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="TROCA DE ÓLEO CAMBIO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">ÓLEO CÂMBIO</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="PNEUS" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">PNEUS</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="INJEÇÃO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">INJEÇÃO</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="EMBREAGEM" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">EMBREAGEM</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" name="compartimentos" value="ESCAPAMENTO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">ESCAPAMENTO</span>
+                                </label>
+                                <label class="inline-flex items-center bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" id="checkbox-outro" value="OUTRO" class="form-checkbox h-4 w-4 text-blue-600 rounded">
+                                    <span class="ml-2 text-xs font-semibold text-gray-700">OUTRO</span>
+                                </label>
+                            </div>
+                            <div class="mt-2 hidden" id="tag-outro-container">
+                                <input type="text" id="tag-outro-input" placeholder="Especifique o outro serviço/compartimento..." class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                            </div>
+                        </div>
+
+
+
+                        <!-- Valor -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label>
+                            <input type="number" step="0.01" id="valor" placeholder="450.00"
+                                   class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                        </div>
+
+                        <!-- PDF + Fotos em grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Anexar PDF da OS</label>
+                                <input type="file" id="pdf-file" accept="application/pdf"
+                                       class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
+                                <p class="text-[10px] text-amber-600 mt-1 font-semibold">* O arquivo serve apenas como Ordem de Serviço e não tem validade como Nota Fiscal.</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fotos do Serviço (Opcional)</label>
+                                <input type="file" id="photos-file" accept="image/*" multiple
+                                       class="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
+                                <p class="text-xs text-gray-500 mt-1">Selecione uma ou mais imagens.</p>
+                            </div>
+                        </div>
+
+                        <!-- Lembrete (EM DESTAQUE NO FINAL) -->
+                        <div class="mt-8 pt-6 border-t-2 border-dashed border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-2xl shadow-sm">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="bg-purple-100 p-2 rounded-full">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                </div>
+                                <label class="block text-lg font-extrabold text-purple-900">Agendar Notificação / Lembrete (Opcional)</label>
+                            </div>
+                            <p class="text-sm text-purple-700 mb-6 font-medium">Configure um lembrete interno para a oficina, ou envie um aviso para o sininho do cliente na data escolhida.</p>
+                            
+                            <div class="mb-5">
+                                <label class="block text-xs font-bold text-purple-800 mb-2 uppercase tracking-wider">Destino da Notificação</label>
+                                <div class="flex flex-col sm:flex-row gap-4 flex-wrap">
+                                    <label class="flex items-center gap-2 cursor-pointer bg-white border border-purple-200 px-4 py-2 rounded-xl hover:border-purple-400 transition-colors shadow-sm">
+                                        <input type="radio" name="lembrete_tipo" value="parceiro" checked class="text-purple-600 focus:ring-purple-500 w-4 h-4">
+                                        <span class="text-sm font-bold text-purple-900">Lembrete Interno (Oficina)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer bg-white border border-purple-200 px-4 py-2 rounded-xl hover:border-purple-400 transition-colors shadow-sm">
+                                        <input type="radio" name="lembrete_tipo" value="cliente" class="text-purple-600 focus:ring-purple-500 w-4 h-4">
+                                        <span class="text-sm font-bold text-purple-900">Sininho do Cliente</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer bg-white border border-purple-200 px-4 py-2 rounded-xl hover:border-purple-400 transition-colors shadow-sm">
+                                        <input type="radio" name="lembrete_tipo" value="ambos" class="text-purple-600 focus:ring-purple-500 w-4 h-4">
+                                        <span class="text-sm font-bold text-purple-900">Ambos (Interno e Cliente)</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-purple-800 mb-1 uppercase tracking-wider">Título da Notificação</label>
+                                <input type="text" id="lembrete-titulo" placeholder="Ex: Revisão dos Freios"
+                                        class="block w-full border border-purple-200 rounded-xl px-4 py-3 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none transition-colors text-sm shadow-sm">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-purple-800 mb-1 uppercase tracking-wider">Data do Lembrete</label>
+                                    <input type="date" id="lembrete-data"
+                                           class="block w-full border border-purple-200 rounded-xl px-4 py-3 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none transition-colors text-sm shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-purple-800 mb-1 uppercase tracking-wider">KM do Lembrete</label>
+                                    <input type="number" id="lembrete-km" placeholder="Ex: 50000"
+                                           class="block w-full border border-purple-200 rounded-xl px-4 py-3 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none transition-colors text-sm shadow-sm">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-purple-800 mb-1 uppercase tracking-wider">Observações (O que ficou para fazer?)</label>
+                                <textarea id="lembrete-observacoes" rows="2" placeholder="Ex: Troca de pastilhas e discos dianteiros"
+                                          class="block w-full border border-purple-200 rounded-xl px-4 py-3 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none transition-colors text-sm resize-none shadow-sm"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-purple-800 mb-1 uppercase tracking-wider">Valor Estimado (Opcional)</label>
+                                <input type="number" step="0.01" id="lembrete-valor" placeholder="150.00"
+                                       class="block w-full border border-purple-200 rounded-xl px-4 py-3 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none transition-colors text-sm shadow-sm">
+                            </div>
+                            
+                            <div class="mt-4 flex justify-end">
+                                <button type="button" id="btn-preview-notification" class="text-sm font-bold text-purple-600 hover:text-purple-800 bg-purple-100 hover:bg-purple-200 px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    Ver Prévia (Sininho)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                            <button type="submit" id="btn-submit" value="concluida"
+                                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                                ✓ Salvar OS Finalizada
+                            </button>
+                            <button type="submit" id="btn-submit-pendente" value="pendente"
+                                    class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                                ⏳ Criar OS Pendente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resultado / QR Code (aparece ao lado quando gerado) -->
+                <div id="result-section" class="bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center justify-center hidden">
+                    <div class="bg-green-50 rounded-full p-3 mb-4">
+                        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Sucesso! OS Gerada.</h2>
+                    <p class="text-sm text-gray-500 mb-6 text-center">Este QR Code é fixo para a placa. Cole o adesivo no veículo.</p>
+
+                    <div id="qrcode-container" class="bg-white p-4 rounded-xl shadow-inner border border-gray-100 mb-4"></div>
+
+                    <div class="w-full bg-gray-50 rounded-lg p-3 text-center mb-6 border border-gray-200">
+                        <p class="text-xs text-gray-400 mb-1 uppercase font-semibold tracking-wider">Link público do veículo</p>
+                        <a id="public-link" href="#" target="_blank" class="text-blue-600 font-medium text-sm break-all hover:underline"></a>
+                    </div>
+
+                    <div class="flex flex-col w-full gap-3">
+                        <button id="btn-baixar-qr" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Baixar QR Code
+                        </button>
+                        <button id="btn-imprimir-qr" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            Imprimir Etiqueta
+                        </button>
+                    </div>
+                    <button id="btn-nova-os" class="mt-6 text-gray-500 font-semibold hover:text-gray-800 transition-colors text-sm">+ Criar nova OS</button>
+                </div>
+
+            </div><!-- /nova-os-grid -->
+        </div><!-- /tab-nova-os -->
+
+        <!-- ─────────────────────────────────────────── -->
+        <!-- TAB 4 — OPORTUNIDADES                      -->
+        <!-- ─────────────────────────────────────────── -->
+        <div id="tab-oportunidades" class="tab-panel hidden">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-100">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <svg class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Oportunidades — Clientes para Contatar
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">Clientes que rodaram mais KM desde a última OS. Entre em contato e traga-os de volta!</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <label class="text-sm font-semibold text-gray-600">KM mínimo desde última OS:</label>
+                        <input id="oport-km-min" type="number" min="0" step="500" value="0"
+                               class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-28 focus:ring-2 focus:ring-yellow-400 outline-none"
+                               oninput="filterOportunidades()">
+                    </div>
+                </div>
+
+                <div id="oport-stats" class="hidden grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                        <div id="oport-count-total" class="text-2xl font-bold text-yellow-600">0</div>
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide mt-1">Total de clientes</div>
+                    </div>
+                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                        <div id="oport-count-pending" class="text-2xl font-bold text-red-500">0</div>
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide mt-1">Aguardando contato</div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                        <div id="oport-count-contacted" class="text-2xl font-bold text-green-600">0</div>
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide mt-1">Já contatados</div>
+                    </div>
+                </div>
+
+                <div id="oport-loading" class="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <svg class="w-8 h-8 animate-spin mb-3" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <p class="text-sm">Carregando clientes...</p>
+                </div>
+
+                <div id="oport-empty" class="hidden flex flex-col items-center justify-center py-16 text-gray-400">
+                    <svg class="w-16 h-16 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="font-semibold text-gray-500">Nenhum cliente encontrado</p>
+                    <p class="text-sm mt-1">Tente reduzir o KM mínimo do filtro.</p>
+                </div>
+
+                <div id="oport-list" class="hidden space-y-4"></div>
+            </div>
+        </div><!-- /tab-oportunidades -->
+
     </main>
 
-    <script type="module" src="js/painel.js"></script>
+    <!-- ══════════════ MODAL QR DO HISTÓRICO ══════════════ -->
+    <div id="qr-history-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 id="qr-modal-plate" class="text-lg font-bold text-gray-900">QR Code</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Escaneie para ver o histórico do veículo</p>
+                </div>
+                <button id="qr-modal-close" class="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-lg hover:bg-gray-100 transition flex items-center justify-center text-xl font-bold">✕</button>
+            </div>
+            <div id="qr-modal-container" class="flex justify-center items-center bg-gray-50 rounded-xl p-4 min-h-[220px] mb-5"></div>
+            <div class="flex gap-3">
+                <button id="qr-modal-baixar" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Baixar
+                </button>
+                <button id="qr-modal-imprimir" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="contact-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 id="contact-modal-title" class="text-lg font-bold text-gray-900">Enviar Mensagem</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Edite a mensagem antes de enviar</p>
+                </div>
+                <button onclick="document.getElementById('contact-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-lg hover:bg-gray-100 transition flex items-center justify-center text-xl font-bold">✕</button>
+            </div>
+            <div class="mb-4">
+                <textarea id="contact-modal-message" rows="5" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none text-sm text-gray-700"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="document.getElementById('contact-modal').classList.add('hidden')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition">
+                    Cancelar
+                </button>
+                <button id="contact-modal-send" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                    Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════ MODAL DE LEMBRETES DO SININHO ══════════════ -->
+    <div id="reminders-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-start justify-center pt-16 md:pt-20 px-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[80vh] overflow-hidden" style="animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1);">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Lembretes Pendentes</h3>
+                        <p class="text-xs text-gray-500">Contate os clientes agendados</p>
+                    </div>
+                </div>
+                <button onclick="toggleRemindersModal()" class="text-gray-400 hover:text-red-500 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto flex-1 bg-gray-50/50">
+                <!-- Loading -->
+                <div id="reminders-loading" class="flex flex-col items-center justify-center py-8 text-gray-400">
+                    <svg class="w-8 h-8 animate-spin mb-3" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <p class="text-sm">Buscando lembretes...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="reminders-empty" class="hidden flex flex-col items-center justify-center py-8 text-gray-400">
+                    <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <p class="font-semibold text-gray-600 text-lg">Tudo limpo!</p>
+                    <p class="text-sm mt-1 text-center">Nenhum lembrete para hoje.</p>
+                </div>
+
+                <!-- Lista renderizada via JS -->
+                <div id="reminders-content" class="space-y-3 hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Prévia do Sininho -->
+    <div id="modal-preview-sininho" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-50 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-in relative">
+            <button onclick="document.getElementById('modal-preview-sininho').classList.add('hidden')" class="absolute top-4 right-4 bg-white/20 hover:bg-black/10 p-2 rounded-full transition z-10 text-slate-400 hover:text-slate-600">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="bg-slate-900 px-4 py-3 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-sm text-white">Lembretes e Avisos</h3>
+                <span class="text-xs font-semibold bg-[#06B6D4] text-white px-2 py-0.5 rounded-full">1</span>
+            </div>
+            <div class="p-4">
+                <div class="p-3 border border-slate-200 bg-white shadow-sm rounded-lg">
+                    <div class="flex justify-between items-start mb-1">
+                        <p id="preview-date-km" class="text-[10px] font-bold text-cyan-600 uppercase tracking-wider">DD/MM/AAAA</p>
+                        <span id="preview-workshop" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-semibold">Nome da Oficina</span>
+                    </div>
+                    <p id="preview-title" class="text-sm font-bold text-slate-800 mb-1">Título do Aviso</p>
+                    <p id="preview-obs" class="text-xs text-slate-500 line-clamp-2">Observações...</p>
+                </div>
+                <p class="text-center text-[10px] text-slate-400 mt-4">Esta é uma prévia exata do que o cliente verá no histórico do veículo.</p>
+            </div>
+            <div class="p-4 bg-gray-100 border-t border-gray-200 text-right">
+                <button type="button" onclick="document.getElementById('modal-preview-sininho').classList.add('hidden')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-6 text-center text-sm text-gray-400 w-full mt-auto">
+        Desenvolvido por <a href="https://wa.me/5548992233575?text=ol%C3%A1%20estava%20no%20aplicativo%20QR%20code%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es" target="_blank" class="font-bold text-gray-500 hover:text-blue-600 transition-colors">Maré Flow</a>
+    </footer>
+
+    <script type="module" src="js/painel.js?v=7"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 </html>

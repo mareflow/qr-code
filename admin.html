@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0a0f1e" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Mareflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1f2d45;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 50;
+    }
+
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 20px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-logo img { width: 36px; height: 36px; object-fit: contain; }
+
+    .sidebar-logo-text { font-size: 16px; font-weight: 700; }
+    .sidebar-logo-text span { color: var(--accent); }
+    .admin-badge {
+      font-size: 10px; font-weight: 600; color: var(--accent);
+      background: rgba(59,130,246,0.15);
+      padding: 2px 8px; border-radius: 20px;
+      margin-left: 4px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px;
+      color: var(--text2);
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      border-radius: 0;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { color: var(--text); background: var(--surface2); }
+    .nav-item.active { color: var(--accent); background: rgba(59,130,246,0.08); border-left-color: var(--accent); }
+
+    .nav-icon { font-size: 18px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-logout {
+      width: 100%;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: rgba(239,68,68,0.08);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { background: rgba(239,68,68,0.15); }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 32px;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .page-title { font-size: 22px; font-weight: 700; }
+    .page-subtitle { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+    /* ── CARDS DASHBOARD ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .stat-card.blue::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .stat-card.green::before { background: linear-gradient(90deg, var(--success), #34d399); }
+    .stat-card.yellow::before { background: linear-gradient(90deg, var(--warning), #fcd34d); }
+    .stat-card.red::before { background: linear-gradient(90deg, var(--danger), #f87171); }
+
+    .stat-label { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 800; }
+    .stat-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+    .stat-icon {
+      position: absolute;
+      top: 16px; right: 16px;
+      font-size: 24px;
+      opacity: 0.2;
+    }
+
+    /* ── SECTIONS ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── TABLE ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-title { font-size: 16px; font-weight: 600; }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-warning { background: var(--warning); color: #000; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-danger { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 12px 24px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 24px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ── STATUS BADGES ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .badge-ativo { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge-ativo::before { background: var(--success); }
+    .badge-inadimplente { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-inadimplente::before { background: var(--warning); }
+    .badge-bloqueado { background: rgba(239,68,68,0.15); color: var(--danger); }
+    .badge-bloqueado::before { background: var(--danger); }
+    .badge-cancelado { background: rgba(100,116,139,0.15); color: var(--text3); }
+    .badge-cancelado::before { background: var(--text3); }
+    .badge-pago { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge-pago::before { background: var(--success); }
+    .badge-pendente { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-pendente::before { background: var(--warning); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      animation: modalIn 0.25s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .modal-subtitle { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: none; color: var(--text2);
+      font-size: 20px; cursor: pointer;
+      width: 32px; height: 32px;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { outline: none; border-color: var(--accent); }
+    .form-control::placeholder { color: var(--text3); }
+
+    select.form-control option { background: var(--surface); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .modal-actions {
+      display: flex; gap: 10px;
+      margin-top: 24px;
+      justify-content: flex-end;
+    }
+
+    /* ── PIX BOX ── */
+    .pix-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .pix-key-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .pix-key-value {
+      font-size: 15px; font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .btn-copy {
+      background: rgba(59,130,246,0.1); color: var(--accent);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 8px; padding: 4px 10px;
+      font-size: 12px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-copy:hover { background: rgba(59,130,246,0.2); }
+    .btn-copy.copied { background: rgba(16,185,129,0.1); color: var(--success); border-color: rgba(16,185,129,0.2); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      display: none;
+      align-items: center; gap: 10px;
+      z-index: 999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .login-logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .login-logo img { width: 40px; height: 40px; object-fit: contain; }
+
+    .login-logo-text { font-size: 20px; font-weight: 800; }
+    .login-logo-text span { color: var(--accent); }
+    .login-logo-badge {
+      font-size: 10px; font-weight: 700;
+      background: rgba(59,130,246,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(59,130,246,0.3);
+      padding: 3px 10px; border-radius: 20px;
+      margin-left: 4px;
+    }
+
+    .login-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+
+    .login-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-login:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.3); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ── AUTH LOCK (mensagens de erro/negação) ── */
+    #auth-lock {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000;
+      flex-direction: column; gap: 16px;
+      text-align: center;
+    }
+
+    .lock-icon { font-size: 48px; }
+    .lock-title { font-size: 20px; font-weight: 700; }
+    .lock-text { font-size: 14px; color: var(--text2); }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text2);
+    }
+
+    .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state .empty-text { font-size: 15px; }
+    .empty-state .empty-sub { font-size: 13px; color: var(--text3); margin-top: 4px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Tela de erro/negação de acesso -->
+<div id="auth-lock">
+  <div class="lock-icon">🚫</div>
+  <div class="lock-title" id="lock-title">Acesso negado</div>
+  <div class="lock-text" id="lock-text">Você não tem permissão para acessar este painel.</div>
+</div>
+
+<!-- ── TELA DE LOGIN ADMIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <img src="assets/logo.png" alt="Mareflow" onerror="this.style.display='none'" />
+      <div>
+        <div class="login-logo-text">Mare<span>flow</span> <span class="login-logo-badge">ADMIN</span></div>
+      </div>
+    </div>
+
+    <div class="login-title">Área Restrita</div>
+    <div class="login-subtitle">Acesso exclusivo para administradores da plataforma.</div>
+
+    <div class="login-error" id="login-error"></div>
+
+    <form id="admin-login-form" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input
+          type="email"
+          id="admin-email"
+          class="form-control"
+          placeholder="seu@email.com"
+          autocomplete="username"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input
+          type="password"
+          id="admin-password"
+          class="form-control"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+      <button type="submit" class="btn-login" id="btn-admin-login">Entrar no Painel</button>
+    </form>
+
+    <div class="login-footer">🔒 Conexão segura via Supabase Auth</div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="assets/logo.png" alt="Mareflow" onerror="this.style.display='none'"/>
+        <div>
+          <div class="sidebar-logo-text">Mare<span>flow</span></div>
+          <div style="font-size:10px; color:var(--text3);">Painel Administrativo</div>
+        </div>
+      </div>
+
+      <nav>
+        <a class="nav-item active" data-section="dashboard" href="#">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a class="nav-item" data-section="oficinas" href="#">
+          <span class="nav-icon">🔧</span> Oficinas
+        </a>
+        <a class="nav-item" data-section="pagamentos" href="#">
+          <span class="nav-icon">💳</span> Pagamentos
+        </a>
+        <a class="nav-item" data-section="configuracoes" href="#">
+          <span class="nav-icon">⚙️</span> Sistema
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="btn-logout">
+          <span>🚪</span> Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div>
+          <div class="page-title" id="page-title">Dashboard</div>
+          <div class="page-subtitle" id="page-subtitle">Visão geral do negócio</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn btn-primary" id="btn-nova-cobranca">
+            ➕ Nova Cobrança
+          </button>
+        </div>
+      </div>
+
+      <!-- SEÇÃO DASHBOARD -->
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <div class="stat-label">Total de Oficinas</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-sub">Cadastradas na plataforma</div>
+            <div class="stat-icon">🏭</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Assinaturas Ativas</div>
+            <div class="stat-value" id="stat-ativas">—</div>
+            <div class="stat-sub">Pagamento em dia</div>
+            <div class="stat-icon">✅</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-label">Inadimplentes</div>
+            <div class="stat-value" id="stat-inadimplentes">—</div>
+            <div class="stat-sub">Aguardando pagamento</div>
+            <div class="stat-icon">⚠️</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Faturamento do Mês</div>
+            <div class="stat-value" id="stat-faturamento">—</div>
+            <div class="stat-sub">Pagamentos confirmados</div>
+            <div class="stat-icon">💰</div>
+          </div>
+        </div>
+
+        <!-- Pagamentos Recentes -->
+        <div class="table-card">
+          <div class="table-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="table-title">Pagamentos Recentes</div>
+            <select id="filtro-dashboard-pagamentos" style="background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px; font-size:13px; outline:none; cursor:pointer;">
+              <option value="pendente">Apenas Pendentes / Atrasados</option>
+              <option value="pago">Apenas Pagos</option>
+              <option value="todos">Todos</option>
+            </select>
+          </div>
+          <div id="recent-payments-list">
+            <div class="empty-state">
+              <div class="empty-icon">💳</div>
+              <div class="empty-text">Nenhum pagamento registrado ainda</div>
+              <div class="empty-sub">Comece lançando uma cobrança para uma oficina</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO OFICINAS -->
+      <div class="section" id="section-oficinas">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">Oficinas Cadastradas</div>
+            <span id="oficinas-count" style="font-size:13px; color:var(--text2);">—</span>
+          </div>
+          <div id="oficinas-list">
+            <div class="empty-state">
+              <div class="empty-icon">🔧</div>
+              <div class="empty-text">Carregando oficinas...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO PAGAMENTOS -->
+      <div class="section" id="section-pagamentos">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">Histórico de Pagamentos</div>
+          </div>
+          <div id="pagamentos-list">
+            <div class="empty-state">
+              <div class="empty-icon">💳</div>
+              <div class="empty-text">Nenhum pagamento registrado ainda</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO CONFIGURAÇÕES / SISTEMA -->
+      <div class="section" id="section-configuracoes">
+        <div class="table-card" style="padding: 24px;">
+          <h3 style="margin-bottom: 20px; font-size:18px;">⚙️ Configurações do Sistema</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">E-mail Administrativo</label>
+              <input type="text" class="form-control" value="ia.mareflow@gmail.com" disabled />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mensalidade Padrão (R$)</label>
+              <input type="text" class="form-control" value="A partir de 70,00" disabled />
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label class="form-label">Chave PIX Recebedora (CNPJ)</label>
+            <input type="text" class="form-control" value="54338791000193" disabled />
+            <div style="font-size:12px; color:var(--text3); margin-top:6px;">Para alterar a conta recebedora ou valores base, acesse as configurações diretamente no banco de dados.</div>
+          </div>
+        </div>
+
+        <div class="table-card" style="padding: 24px; margin-top: 24px;">
+          <h3 style="margin-bottom: 16px; font-size:18px;">📈 Inteligência de Negócio (SaaS)</h3>
+          <div style="display:flex; gap: 24px; flex-wrap:wrap;">
+             <div style="flex:1; min-width:200px; background:var(--surface2); padding:20px; border-radius:12px; border:1px solid var(--border);">
+               <div style="font-size:12px; color:var(--text2); text-transform:uppercase; font-weight:600; margin-bottom:8px;">MRR (Receita Recorrente)</div>
+               <div style="font-size:28px; font-weight:800; color:var(--accent);" id="metric-mrr">R$ 0,00</div>
+               <div style="font-size:12px; color:var(--text3); margin-top:4px;">Projeção mensal atual</div>
+             </div>
+             <div style="flex:1; min-width:200px; background:var(--surface2); padding:20px; border-radius:12px; border:1px solid var(--border);">
+               <div style="font-size:12px; color:var(--text2); text-transform:uppercase; font-weight:600; margin-bottom:8px;">LTV Estimado (6 meses)</div>
+               <div style="font-size:28px; font-weight:800; color:var(--success);" id="metric-ltv">R$ 0,00</div>
+               <div style="font-size:12px; color:var(--text3); margin-top:4px;">Valor gerado por oficina a longo prazo</div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── MODAL: NOVA COBRANÇA ── -->
+<div class="modal-overlay" id="modal-cobranca">
+  <div class="modal">
+    <button class="modal-close" id="close-modal-cobranca">✕</button>
+    <div class="modal-title">Nova Cobrança</div>
+    <div class="modal-subtitle">Lança uma mensalidade para uma oficina</div>
+
+    <div class="form-group">
+      <label class="form-label">Oficina</label>
+      <select class="form-control" id="select-oficina">
+        <option value="">Selecione uma oficina...</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Valor (R$)</label>
+        <input type="number" class="form-control" id="input-valor" placeholder="Ex: 70.00" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vencimento</label>
+        <input type="date" class="form-control" id="input-vencimento" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Referência (mês)</label>
+      <input type="month" class="form-control" id="input-referencia" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observações (opcional)</label>
+      <input type="text" class="form-control" id="input-obs-cobranca" placeholder="Ex: Mensalidade Julho 2025" />
+    </div>
+
+    <!-- PIX para copiar e enviar ao cliente -->
+    <div class="pix-box">
+      <div class="pix-key-label">Chave PIX para enviar ao cliente</div>
+      <div class="pix-key-value">
+        <span id="pix-key-display">—</span>
+        <button class="btn-copy" id="btn-copy-pix">Copiar</button>
+      </div>
+      <div style="font-size:11px; color:var(--text3); margin-top:6px;">Configure a chave PIX em <strong>js/admin.js</strong></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancel-cobranca">Cancelar</button>
+      <button class="btn btn-primary" id="confirm-cobranca">Lançar Cobrança</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: CONFIRMAR PAGAMENTO ── -->
+<div class="modal-overlay" id="modal-confirmar">
+  <div class="modal">
+    <button class="modal-close" id="close-modal-confirmar">✕</button>
+    <div class="modal-title">Confirmar Pagamento</div>
+    <div class="modal-subtitle">Registre o recebimento do PIX desta oficina</div>
+
+    <div class="pix-box" id="confirm-oficina-info" style="margin-bottom:20px;">
+      <div style="font-size:12px; color:var(--text2);">Oficina</div>
+      <div style="font-size:15px; font-weight:600;" id="confirm-oficina-nome">—</div>
+      <div style="font-size:12px; color:var(--text3); margin-top:4px;">Cobrança: <span id="confirm-valor">—</span> | Vence: <span id="confirm-vencimento">—</span></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Data do Pagamento</label>
+      <input type="date" class="form-control" id="input-data-pagamento" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observações (opcional)</label>
+      <input type="text" class="form-control" id="input-obs-confirmacao" placeholder="Ex: PIX confirmado às 14h30" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancel-confirmar">Cancelar</button>
+      <button class="btn btn-success" id="confirm-pagamento">✅ Confirmar Recebimento</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script type="module" src="js/admin.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('SW registrado', reg))
+        .catch(err => console.error('Erro no SW', err));
+    });
+  }
+</script>
+</body>
+</html>
+
+
+
+

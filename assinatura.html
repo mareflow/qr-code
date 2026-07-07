@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#f9fafb" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minha Assinatura | Mareflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --surface2: #f3f4f6;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent2: #1d4ed8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #111827;
+      --text2: #4b5563;
+      --text3: #6b7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .navbar-left { display: flex; align-items: center; gap: 16px; }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { color: var(--text); border-color: var(--accent); }
+    .navbar-title { font-size: 15px; font-weight: 600; }
+
+    /* ── CONTAINER ── */
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ── STATUS CARD ── */
+    .status-card {
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .status-card.ativo {
+      background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(52,211,153,0.05) 100%);
+      border-color: rgba(16,185,129,0.3);
+    }
+
+    .status-card.inadimplente, .status-card.bloqueado {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(248,113,113,0.05) 100%);
+      border-color: rgba(239,68,68,0.3);
+    }
+
+    .status-card.inadimplente_aviso {
+      background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(252,211,77,0.05) 100%);
+      border-color: rgba(245,158,11,0.3);
+    }
+
+    .status-icon { font-size: 36px; margin-bottom: 12px; }
+    .status-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; margin-bottom: 4px; }
+    .status-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .status-desc { font-size: 14px; opacity: 0.75; line-height: 1.5; }
+
+    .status-glow {
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      opacity: 0.05;
+    }
+
+    .status-card.ativo .status-glow { background: var(--success); }
+    .status-card.inadimplente .status-glow, .status-card.bloqueado .status-glow { background: var(--danger); }
+    .status-card.inadimplente_aviso .status-glow { background: var(--warning); }
+
+    /* ── INFO GRID ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .info-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+    }
+
+    .info-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .info-value { font-size: 18px; font-weight: 700; }
+    .info-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    /* ── PIX BOX ── */
+    .pix-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .pix-section-title {
+      font-size: 15px; font-weight: 700;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .pix-key-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .pix-key-text { font-size: 14px; font-weight: 600; word-break: break-all; }
+    .btn-copy {
+      white-space: nowrap;
+      background: rgba(59,130,246,0.1); color: var(--accent);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 8px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-copy:hover { background: rgba(59,130,246,0.2); }
+    .btn-copy.copied { background: rgba(16,185,129,0.1); color: var(--success); border-color: rgba(16,185,129,0.2); }
+
+    .pix-note {
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.6;
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .pix-nota-valor {
+      font-size: 24px; font-weight: 800;
+      color: var(--accent);
+      margin: 12px 0 4px;
+    }
+
+    /* ── HISTORICO ── */
+    .historico-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .historico-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .historico-item {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: background 0.2s;
+    }
+
+    .historico-item:hover { background: rgba(255,255,255,0.02); }
+    .historico-item:last-child { border-bottom: none; }
+
+    .historico-left { flex: 1; }
+    .historico-mes { font-size: 14px; font-weight: 600; }
+    .historico-data { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .historico-valor { font-size: 15px; font-weight: 700; }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+    .badge-pago { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge-pago::before { background: var(--success); }
+    .badge-pendente { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-pendente::before { background: var(--warning); }
+    .badge-cancelado { background: rgba(100,116,139,0.15); color: var(--text3); }
+    .badge-cancelado::before { background: var(--text3); }
+
+    /* ── SKELETON / LOADING ── */
+    .loading-state { text-align: center; padding: 60px 24px; color: var(--text2); font-size: 15px; }
+    .loading-state .loading-icon { font-size: 32px; margin-bottom: 12px; animation: spin 1.5s linear infinite; display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state { text-align: center; padding: 40px 24px; color: var(--text2); }
+    .empty-state .empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+    /* ── BLOCKED SCREEN ── */
+    .blocked-screen {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(10,15,30,0.97);
+      z-index: 100;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      padding: 32px;
+    }
+    .blocked-screen.show { display: flex; }
+    .blocked-icon { font-size: 56px; }
+    .blocked-title { font-size: 22px; font-weight: 800; }
+    .blocked-text { font-size: 14px; color: var(--text2); max-width: 400px; line-height: 1.6; }
+
+    @media (max-width: 600px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .container { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Tela de bloqueio (caso inadimplência) -->
+<div class="blocked-screen" id="blocked-screen">
+  <div class="blocked-icon">🔒</div>
+  <div class="blocked-title">Acesso Temporariamente Suspenso</div>
+  <div class="blocked-text">
+    Sua assinatura está com pagamento em atraso.<br/>
+    Realize o pagamento via PIX abaixo para reativar o acesso imediatamente.
+  </div>
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; max-width:400px; width:100%; margin-top:8px;">
+    <div style="font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:4px;">Chave PIX</div>
+    <div style="font-size:16px; font-weight:700; margin-bottom:12px;" id="blocked-pix-key">—</div>
+    <div style="font-size:28px; font-weight:800; color:var(--accent);" id="blocked-pix-valor">R$ 97,00</div>
+    <div style="font-size:13px; color:var(--text2); margin-top:4px;">Após o pagamento, aguarde a confirmação do administrador.</div>
+    <button class="btn-copy" id="blocked-btn-copy" style="width:100%; margin-top:16px; padding:10px; font-size:14px;">📋 Copiar chave PIX</button>
+  </div>
+  <a href="painel.html" style="font-size:13px; color:var(--text3); margin-top:8px;">← Voltar ao painel</a>
+  <button id="btn-sair-bloqueado" style="background:transparent; border:1px solid var(--border); color:var(--danger); font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer; margin-top:8px; font-size:13px; font-family:inherit;">Sair da Conta</button>
+</div>
+
+<!-- MODAL PIX (PAGAMENTO) -->
+<div class="modal" id="modal-pix" style="display:none; position:fixed; inset:0; background:rgba(10,15,30,0.85); z-index:200; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:var(--surface); padding:24px; border-radius:16px; max-width:360px; width:100%; border:1px solid var(--border); text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+    <h3 style="margin-bottom:8px; font-size:18px;">Pagar Mensalidade</h3>
+    <div style="font-size:14px; color:var(--text2); margin-bottom:16px;" id="modal-pix-mes">Ref: Mês</div>
+    <div style="font-size:24px; font-weight:800; color:var(--accent); margin-bottom:16px;" id="modal-pix-valor">R$ 97,00</div>
+    
+    <div style="background:#fff; padding:12px; border-radius:12px; display:inline-block; margin-bottom:20px;">
+       <!-- QR Code Placeholder (Em um cenário real usaríamos a API do PIX) -->
+       <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QR Code PIX" width="160" height="160" style="display:block; opacity:0.8;">
+       <div style="color:#000; font-size:11px; font-weight:bold; margin-top:8px;">QR CODE PIX</div>
+    </div>
+    
+    <div style="background:var(--surface2); padding:12px; border-radius:8px; margin-bottom:16px; border:1px solid var(--border);">
+      <div style="font-size:11px; color:var(--text3); text-transform:uppercase; margin-bottom:4px;">Chave PIX (CNPJ)</div>
+      <div style="font-size:15px; font-weight:600;" id="modal-pix-key">54338791000193</div>
+    </div>
+    
+    <button class="btn-copy" id="modal-btn-copy" style="width:100%; padding:12px; font-size:14px; margin-bottom:12px; border-radius:8px;">📋 Copiar Chave PIX</button>
+    <button onclick="document.getElementById('modal-pix').style.display='none'" style="background:transparent; border:none; color:var(--text2); cursor:pointer; font-size:13px; padding:8px;">Fechar</button>
+  </div>
+</div>
+
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="painel.html" class="btn-back">← Voltar ao Painel</a>
+    <div class="navbar-title">Minha Assinatura</div>
+  </div>
+</nav>
+
+<!-- CONTAINER -->
+<div class="container" id="main-content">
+  <div class="loading-state">
+    <span class="loading-icon">⏳</span>
+    Carregando informações da assinatura...
+  </div>
+</div>
+
+<script type="module" src="js/assinatura.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+</script>
+</body>
+</html>
+
+
+
+
