@@ -113,23 +113,8 @@ async function renderAssinatura() {
     diasParaVencer = Math.ceil((venc - hoje) / (1000 * 60 * 60 * 24))
   }
 
-  // Verificar se deve mostrar tela de bloqueio
-  if (status === 'bloqueado' || status === 'aguardando_pagamento' || (diasParaVencer !== null && diasParaVencer <= -5)) {
-    const blockedScreen = document.getElementById('blocked-screen');
-    blockedScreen.classList.add('show')
-    container.style.display = 'none'
-    
-    // Ajustar texto da tela de bloqueio conforme o status
-    if (status === 'aguardando_pagamento') {
-        const titleEl = blockedScreen.querySelector('.blocked-title');
-        const textEl = blockedScreen.querySelector('.blocked-text');
-        if (titleEl) titleEl.textContent = 'Aguardando Pagamento';
-        if (textEl) textEl.textContent = 'Efetue o pagamento da primeira mensalidade abaixo para liberar o seu acesso imediato ao painel e a todos os recursos da sua oficina.';
-    }
-    
-    return
-  }
-
+  // A tela de bloqueio (blocked-screen) manual foi removida para permitir que o usuário
+  // use a interface interativa de assinaturas e gere o pagamento via Asaas
   // Definir estado do status card — usa workshops como fonte de verdade
   let cardClass, icon, statusTitulo, statusDesc
   if (status === 'bloqueado') {
