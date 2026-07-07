@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mareflow-v11';
+const CACHE_NAME = 'mareflow-v12';
 
 // Install event - cache core assets
 self.addEventListener('install', event => {
