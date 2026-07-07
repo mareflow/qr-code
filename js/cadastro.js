@@ -100,13 +100,13 @@ form.addEventListener('submit', async (e) => {
         if (planoError) throw new Error('Erro ao buscar plano: ' + planoError.message);
 
         if (planoData) {
-            const { error: assinError } = await supabase.from('assinaturas').upsert({
+            const { error: assinError } = await supabase.from('assinaturas').insert({
                 workshop_id: user.id,
                 plano_id: planoData.id,
                 status: 'ativo',
                 data_inicio: vencimentoStr,
                 proximo_vencimento: vencimentoStr
-            }, { onConflict: 'workshop_id' });
+            });
             if (assinError) throw new Error('Erro ao criar assinatura: ' + assinError.message);
         }
 
