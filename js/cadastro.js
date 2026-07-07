@@ -87,7 +87,7 @@ form.addEventListener('submit', async (e) => {
             .upsert({
                 id: user.id,
                 name: nomeOficina,
-                documento: cpfCnpj,
+                cpf_cnpj: cpfCnpj,
                 assinatura_status: 'aguardando_pagamento',
                 assinatura_vencimento: vencimentoStr
             }, { onConflict: 'id' });
