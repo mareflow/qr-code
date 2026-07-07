@@ -88,6 +88,7 @@ form.addEventListener('submit', async (e) => {
                 id: user.id,
                 name: nomeOficina,
                 cpf_cnpj: cpfCnpj,
+                whatsapp: '',
                 assinatura_status: 'aguardando_pagamento',
                 assinatura_vencimento: vencimentoStr
             }, { onConflict: 'id' });
